@@ -53,3 +53,12 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# PRG32 cartridge outputs
+dist/
+
+# Python helper caches
+__pycache__/
+
+# macOS metadata
+.DS_Store

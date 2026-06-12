@@ -1,0 +1,28 @@
+{
+  "abi": "prg32-metadata-1.0",
+  "id": "org.uniparthenope.prg32.moana-lemon-apocalypse",
+  "title": "Moana and the Lemon Apocalypse",
+  "version": "1.0.0",
+  "summary": "Portable PRG32 arcade cartridge about lemons, chickens, and an angry rooster.",
+  "tags": [
+    "game",
+    "arcade",
+    "education",
+    "riscv",
+    "prg32"
+  ],
+  "assets": {
+    "icon": "icon.png",
+    "splash": "screenshot.png"
+  },
+  "architectures": [
+    {
+      "id": "esp32c6",
+      "file": "moana-lemon-apocalypse-esp32c6.prg32"
+    },
+    {
+      "id": "qemu",
+      "file": "moana-lemon-apocalypse-qemu.prg32"
+    }
+  ]
+}

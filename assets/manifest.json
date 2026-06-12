@@ -1,0 +1,27 @@
+{
+  "title": "Moana and the Lemon Apocalypse asset manifest",
+  "license": "MIT / original generated assets",
+  "png": [
+    "background_lemon_grove_320x200.png",
+    "splash_moana_lemon_apocalypse_ai_320x200.png",
+    "splash_moana_lemon_apocalypse_320x200.png",
+    "splash_moana_lemon_apocalypse_generated_source.png",
+    "sprite_chicken_4frames_16x16.png",
+    "sprite_lemons_4kinds_16x16.png",
+    "sprite_moana_4frames_16x16.png",
+    "sprite_rooster_4frames_16x16.png"
+  ],
+  "wav": [
+    "sfx_bad_lemon.wav",
+    "sfx_collect_lemon.wav",
+    "sfx_game_over.wav",
+    "sfx_rooster_scared.wav",
+    "soundtrack_lemon_tree_inspired_loop.wav"
+  ],
+  "sprite_format": {
+    "sprite_*_4frames_16x16.png": "4 horizontal frames, each 16x16 RGBA",
+    "sprite_lemons_4kinds_16x16.png": "normal, magic, energy, bad lemon frames"
+  },
+  "music_note": "Original chiptune motif inspired by the cheerful feel of Lemon Tree; no copied recording or song file is bundled.",
+  "imagegen_note": "splash_moana_lemon_apocalypse_ai_320x200.png is a project-bound AI-generated splash asset resized from the saved source image."
+}

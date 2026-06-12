@@ -1,0 +1,62 @@
+{
+  "abi": "prg32-metadata-1.0",
+  "id": "org.uniparthenope.prg32.moana-lemon-apocalypse",
+  "title": "Moana and the Lemon Apocalypse",
+  "version": "1.0.0",
+  "summary": "A PRG32 arcade game about Moana gathering lemons before chickens and a rooster ruin the day.",
+  "description": "Moana is a 6-year-old lemon collector racing through a bright grove. Lemons fall in pseudo-random patterns, expire on the ground, and are contested by chickens. Magic lemons add time, energetic lemons speed Moana up, bad lemons consume precious seconds, and a rooster periodically attacks until Moana scares him away by throwing lemons from her basket. Each screen lasts 150 seconds and ends with a door escape while chickens and the rooster pursue her.",
+  "authors": [
+    {
+      "name": "Raffaele Montella",
+      "affiliation": "UniParthenope"
+    }
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/riscv-prg32/MoanaAndTheLemonApocalypse",
+  "repository": "https://github.com/riscv-prg32/MoanaAndTheLemonApocalypse",
+  "tags": [
+    "game",
+    "arcade",
+    "education",
+    "riscv",
+    "prg32"
+  ],
+  "created_at": "2026-06-12T00:00:00Z",
+  "updated_at": "2026-06-12T00:00:00Z",
+  "runtime": {
+    "platform": "PRG32",
+    "isa": "RV32I",
+    "architecture": "esp32c6",
+    "architectures": [
+      {
+        "id": "esp32c6",
+        "label": "ESP32-C6 hardware",
+        "target": "esp32c6",
+        "display": "ili9341",
+        "isa": "RV32I"
+      },
+      {
+        "id": "qemu",
+        "label": "QEMU virtual screen",
+        "target": "esp32c3",
+        "display": "qemu-rgb",
+        "isa": "RV32I"
+      }
+    ]
+  },
+  "assets": {
+    "icon": {
+      "block": "ICON",
+      "mime": "image/png"
+    },
+    "screenshot": {
+      "block": "SCRN",
+      "mime": "image/png",
+      "optional": true
+    }
+  },
+  "colophon": {
+    "block": "COLO",
+    "abi": "prg32-colophon-1.0"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "abi": "prg32-colophon-1.0",
+  "title": "Moana and the Lemon Apocalypse",
+  "entries": [
+    {
+      "role": "Game design and implementation",
+      "name": "Raffaele Montella and Codex"
+    },
+    {
+      "role": "Reference framework",
+      "name": "PRG32"
+    },
+    {
+      "role": "Project structure example",
+      "name": "You Have Got Pizza"
+    },
+    {
+      "role": "Artwork and sound",
+      "name": "Original generated assets; chiptune motif inspired by Lemon Tree"
+    }
+  ]
+}
