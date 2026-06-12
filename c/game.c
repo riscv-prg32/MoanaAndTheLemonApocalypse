@@ -11,14 +11,15 @@
 
 #define SCREEN_W 320
 #define SCREEN_H 200
-#define PLAYER_W 16
-#define PLAYER_H 16
-#define CHICKEN_W 16
-#define CHICKEN_H 16
-#define ROOSTER_W 16
-#define ROOSTER_H 16
-#define LEMON_W 8
-#define LEMON_H 8
+#define SPRITE_SIZE 24
+#define PLAYER_W SPRITE_SIZE
+#define PLAYER_H SPRITE_SIZE
+#define CHICKEN_W SPRITE_SIZE
+#define CHICKEN_H SPRITE_SIZE
+#define ROOSTER_W SPRITE_SIZE
+#define ROOSTER_H SPRITE_SIZE
+#define LEMON_W SPRITE_SIZE
+#define LEMON_H SPRITE_SIZE
 #define NUM_TREES 5
 #define MAX_LEMONS 16
 #define NUM_CHICKENS 4
@@ -41,8 +42,9 @@
 #define COLOR_MAGIC     0x07ff
 #define COLOR_ENERGY    0xfd20
 #define COLOR_BAD       0x7a86
-#define COLOR_SKIN      0xfdb4
-#define COLOR_HAIR      0x4208
+#define COLOR_SKIN      0xff17
+#define COLOR_HAIR      0x8208
+#define COLOR_EYE       0x05bf
 #define COLOR_DRESS     0x03ef
 #define COLOR_CHICKEN   0xff7a
 #define COLOR_ROOSTER   0xf800
@@ -186,7 +188,7 @@ static void play_melody_tick(void) {
 static void reset_chickens(void) {
     for (uint8_t i = 0; i < NUM_CHICKENS; ++i) {
         chickens[i].x = (int16_t)(24 + i * 72);
-        chickens[i].y = (int16_t)(154 + ((i & 1u) ? 14 : 0));
+        chickens[i].y = (int16_t)(150 + ((i & 1u) ? 12 : 0));
         chickens[i].dx = (i & 1u) ? 1 : -1;
         chickens[i].dy = (i & 2u) ? 1 : -1;
     }
@@ -198,14 +200,14 @@ static void choose_door(void) {
         door_x = 2;
         door_y = (int16_t)(42 + (rnd() % 116u));
     } else if (door_side == 1) {
-        door_x = SCREEN_W - 18;
+        door_x = SCREEN_W - SPRITE_SIZE - 2;
         door_y = (int16_t)(42 + (rnd() % 116u));
     } else if (door_side == 2) {
         door_x = (int16_t)(34 + (rnd() % 236u));
         door_y = 18;
     } else {
         door_x = (int16_t)(34 + (rnd() % 236u));
-        door_y = SCREEN_H - 18;
+        door_y = SCREEN_H - SPRITE_SIZE - 2;
     }
 }
 
@@ -217,7 +219,7 @@ static void start_screen(uint8_t next_screen) {
     rooster.scared = 0;
     rooster.cooldown = 150;
     moana_x = 152;
-    moana_y = 106;
+    moana_y = 102;
     last_dir = 1;
     screen_no = next_screen;
     quota = (uint8_t)(QUOTA_BASE + (screen_no - 1u) * 4u);
@@ -479,6 +481,13 @@ static void draw_field(void) {
     prg32_gfx_clear(COLOR_SKY);
     prg32_gfx_rect(0, 0, 320, 18, 0x047f);
     prg32_gfx_rect(0, 18, 320, 12, 0x7e9f);
+    prg32_gfx_rect(132, 54, 72, 12, 0xbdf7);
+    prg32_gfx_rect(140, 42, 50, 12, 0xc638);
+    prg32_gfx_rect(148, 30, 12, 12, 0xa514);
+    prg32_gfx_rect(174, 28, 12, 14, 0xa514);
+    prg32_gfx_rect(188, 36, 10, 18, 0x9cd3);
+    prg32_gfx_rect(126, 66, 86, 8, 0x7bce);
+    prg32_gfx_rect(112, 74, 118, 8, COLOR_SEA);
     prg32_gfx_rect(0, 142, 320, 58, COLOR_GRASS);
     for (int x = 0; x < SCREEN_W; x += 16) {
         prg32_gfx_rect(x, 176 + ((x >> 4) & 3), 12, 2, COLOR_GRASS_DK);
@@ -496,51 +505,55 @@ static uint16_t lemon_color(LemonKind kind) {
 
 static void draw_lemon(const Lemon *l) {
     uint16_t c = lemon_color(l->kind);
-    prg32_gfx_rect(l->x + 2, l->y, 4, 8, c);
-    prg32_gfx_rect(l->x, l->y + 2, 8, 4, c);
-    prg32_gfx_rect(l->x + 5, l->y, 3, 2, 0x2cc4);
-    if (l->age + 25 > l->ttl) prg32_gfx_rect(l->x + 2, l->y + 3, 4, 2, PRG32_COLOR_BLACK);
+    prg32_gfx_rect(l->x + 8, l->y + 5, 8, 14, c);
+    prg32_gfx_rect(l->x + 5, l->y + 8, 14, 8, c);
+    prg32_gfx_rect(l->x + 14, l->y + 4, 6, 3, 0x2cc4);
+    if (l->kind == LEMON_MAGIC) prg32_gfx_rect(l->x + 10, l->y + 10, 4, 4, PRG32_COLOR_WHITE);
+    if (l->kind == LEMON_ENERGY) prg32_gfx_rect(l->x + 11, l->y + 6, 3, 12, PRG32_COLOR_WHITE);
+    if (l->age + 25 > l->ttl) prg32_gfx_rect(l->x + 8, l->y + 12, 9, 3, PRG32_COLOR_BLACK);
 }
 
 static void draw_moana(void) {
     uint8_t anim = (uint8_t)((frame_no >> 3) & 3u);
     int x = moana_x;
     int y = moana_y;
-    prg32_gfx_rect(x + 3, y, 9, 5, COLOR_HAIR);
-    prg32_gfx_rect(x + 4, y + 2, 8, 6, COLOR_SKIN);
-    prg32_gfx_rect(x + 5, y + 4, 1, 1, PRG32_COLOR_BLACK);
-    prg32_gfx_rect(x + 10, y + 4, 1, 1, PRG32_COLOR_BLACK);
-    prg32_gfx_rect(x + 2, y + 8, 12, 5, COLOR_DRESS);
-    prg32_gfx_rect(x + 1, y + 10, 3, 3, COLOR_SKIN);
-    prg32_gfx_rect(x + 12, y + 10, 3, 3, COLOR_SKIN);
-    prg32_gfx_rect(x + 4, y + 13, 3, anim & 1u ? 2 : 3, COLOR_SHADOW);
-    prg32_gfx_rect(x + 9, y + 13, 3, anim & 1u ? 3 : 2, COLOR_SHADOW);
-    prg32_gfx_rect(x + 12, y + 6, 4, 4, COLOR_TRUNK);
-    prg32_gfx_rect(x + 13, y + 7, 2, 2, COLOR_LEMON);
+    prg32_gfx_rect(x + 4, y, 15, 8, COLOR_HAIR);
+    prg32_gfx_rect(x + 2, y + 4, 5, 6, COLOR_HAIR);
+    prg32_gfx_rect(x + 6, y + 4, 12, 9, COLOR_SKIN);
+    prg32_gfx_rect(x + 8, y + 7, 2, 2, COLOR_EYE);
+    prg32_gfx_rect(x + 15, y + 7, 2, 2, COLOR_EYE);
+    prg32_gfx_rect(x + 10, y + 11, 5, 1, 0xdaa8);
+    prg32_gfx_rect(x + 3, y + 13, 18, 7, COLOR_DRESS);
+    prg32_gfx_rect(x + 1, y + 15, 5, 5, COLOR_SKIN);
+    prg32_gfx_rect(x + 18, y + 15, 5, 5, COLOR_SKIN);
+    prg32_gfx_rect(x + 6, y + 20, 4, anim & 1u ? 3 : 4, COLOR_SHADOW);
+    prg32_gfx_rect(x + 14, y + 20, 4, anim & 1u ? 4 : 3, COLOR_SHADOW);
+    prg32_gfx_rect(x + 17, y + 9, 6, 7, COLOR_TRUNK);
+    prg32_gfx_rect(x + 18, y + 10, 4, 4, COLOR_LEMON);
 }
 
 static void draw_chicken(const Chicken *c, uint8_t i) {
     uint8_t flap = (uint8_t)(((frame_no >> 3) + i) & 1u);
-    prg32_gfx_rect(c->x + 4, c->y + 4, 9, 8, COLOR_CHICKEN);
-    prg32_gfx_rect(c->x + 10, c->y + 2, 5, 5, COLOR_CHICKEN);
-    prg32_gfx_rect(c->x + 14, c->y + 4, 2, 2, COLOR_ENERGY);
-    prg32_gfx_rect(c->x + 12, c->y + 3, 1, 1, PRG32_COLOR_BLACK);
-    prg32_gfx_rect(c->x + (flap ? 1 : 2), c->y + 7, 5, 3, PRG32_COLOR_WHITE);
-    prg32_gfx_rect(c->x + 5, c->y + 12, 2, 3, COLOR_ENERGY);
-    prg32_gfx_rect(c->x + 10, c->y + 12, 2, 3, COLOR_ENERGY);
+    prg32_gfx_rect(c->x + 5, c->y + 7, 14, 10, COLOR_CHICKEN);
+    prg32_gfx_rect(c->x + 14, c->y + 3, 8, 8, COLOR_CHICKEN);
+    prg32_gfx_rect(c->x + 21, c->y + 7, 3, 3, COLOR_ENERGY);
+    prg32_gfx_rect(c->x + 17, c->y + 6, 2, 2, PRG32_COLOR_BLACK);
+    prg32_gfx_rect(c->x + (flap ? 1 : 3), c->y + 10, 8, 5, PRG32_COLOR_WHITE);
+    prg32_gfx_rect(c->x + 8, c->y + 17, 3, 6, COLOR_ENERGY);
+    prg32_gfx_rect(c->x + 15, c->y + 17, 3, 6, COLOR_ENERGY);
 }
 
 static void draw_rooster(void) {
     if (!rooster.active) return;
     uint16_t body = rooster.scared ? 0x7bef : COLOR_ROOSTER;
-    prg32_gfx_rect(rooster.x + 3, rooster.y + 5, 10, 8, body);
-    prg32_gfx_rect(rooster.x + 9, rooster.y + 1, 6, 6, body);
-    prg32_gfx_rect(rooster.x + 10, rooster.y, 4, 2, COLOR_ENERGY);
-    prg32_gfx_rect(rooster.x + 14, rooster.y + 4, 2, 2, COLOR_LEMON);
-    prg32_gfx_rect(rooster.x + 12, rooster.y + 3, 1, 1, PRG32_COLOR_BLACK);
-    prg32_gfx_rect(rooster.x, rooster.y + 7, 5, 4, 0x001f);
-    prg32_gfx_rect(rooster.x + 5, rooster.y + 13, 2, 3, COLOR_ENERGY);
-    prg32_gfx_rect(rooster.x + 11, rooster.y + 13, 2, 3, COLOR_ENERGY);
+    prg32_gfx_rect(rooster.x + 4, rooster.y + 8, 15, 10, body);
+    prg32_gfx_rect(rooster.x + 13, rooster.y + 2, 9, 9, body);
+    prg32_gfx_rect(rooster.x + 14, rooster.y, 7, 3, COLOR_ENERGY);
+    prg32_gfx_rect(rooster.x + 21, rooster.y + 6, 3, 3, COLOR_LEMON);
+    prg32_gfx_rect(rooster.x + 17, rooster.y + 5, 2, 2, PRG32_COLOR_BLACK);
+    prg32_gfx_rect(rooster.x, rooster.y + 10, 8, 7, 0x001f);
+    prg32_gfx_rect(rooster.x + 7, rooster.y + 18, 3, 6, COLOR_ENERGY);
+    prg32_gfx_rect(rooster.x + 15, rooster.y + 18, 3, 6, COLOR_ENERGY);
 }
 
 static void draw_hud(void) {
@@ -560,9 +573,9 @@ static void draw_hud(void) {
 
 static void draw_door(void) {
     if (state != STATE_ESCAPE) return;
-    prg32_gfx_rect(door_x, door_y, 16, 16, COLOR_DOOR);
-    prg32_gfx_rect(door_x + 3, door_y + 3, 10, 10, COLOR_DOOR_LIT);
-    prg32_gfx_rect(door_x + 11, door_y + 8, 2, 2, PRG32_COLOR_BLACK);
+    prg32_gfx_rect(door_x, door_y, 24, 24, COLOR_DOOR);
+    prg32_gfx_rect(door_x + 4, door_y + 4, 16, 16, COLOR_DOOR_LIT);
+    prg32_gfx_rect(door_x + 17, door_y + 12, 3, 3, PRG32_COLOR_BLACK);
 }
 
 static void draw_message(void) {
@@ -581,7 +594,7 @@ static void draw_splash(void) {
     prg32_gfx_text8(44, 70, "LEMON APOCALYPSE", COLOR_LEMON, 0x0228);
     prg32_gfx_text8(54, 100, "START: gather, throw, escape", PRG32_COLOR_WHITE, 0x0228);
     prg32_gfx_text8(76, 118, "A throws basket lemons", COLOR_MAGIC, 0x0228);
-    prg32_gfx_text8(70, 164, "Inspired by Lemon Tree", PRG32_COLOR_BLACK, COLOR_SAND);
+    prg32_gfx_text8(48, 164, "Castello Aragonese edition", PRG32_COLOR_BLACK, COLOR_SAND);
     draw_moana();
 }
 

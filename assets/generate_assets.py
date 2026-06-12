@@ -29,8 +29,9 @@ LEMON = (255, 235, 62, 255)
 MAGIC = (68, 232, 255, 255)
 ENERGY = (255, 160, 42, 255)
 BAD = (104, 84, 118, 255)
-SKIN = (248, 193, 135, 255)
-HAIR = (54, 34, 28, 255)
+SKIN = (255, 224, 180, 255)
+HAIR = (132, 48, 34, 255)
+EYE = (35, 154, 178, 255)
 DRESS = (24, 174, 190, 255)
 CHICKEN = (255, 246, 185, 255)
 ROOSTER = (222, 36, 28, 255)
@@ -107,6 +108,13 @@ def background() -> Canvas:
     c = Canvas(320, 200, SKY)
     c.rect(0, 0, 319, 17, SEA)
     c.rect(0, 18, 319, 29, FOAM)
+    c.rect(132, 54, 204, 66, (190, 190, 180, 255))
+    c.rect(140, 42, 190, 54, (198, 198, 184, 255))
+    c.rect(148, 30, 160, 42, (168, 164, 150, 255))
+    c.rect(174, 28, 186, 42, (168, 164, 150, 255))
+    c.rect(188, 36, 198, 54, (150, 148, 138, 255))
+    c.rect(126, 66, 212, 74, (120, 112, 100, 255))
+    c.rect(112, 74, 230, 82, SEA)
     c.rect(0, 140, 319, 189, GRASS)
     c.rect(0, 188, 319, 199, SAND)
     for x in range(0, 320, 16):
@@ -131,56 +139,63 @@ def splash() -> Canvas:
 
 
 def moana_frame(frame: int) -> Canvas:
-    c = Canvas(16, 16)
-    c.rect(3, 0, 12, 5, HAIR)
-    c.rect(4, 2, 12, 8, SKIN)
-    c.px(6, 4, BLACK); c.px(11, 4, BLACK)
-    c.rect(2, 8, 14, 13, DRESS)
-    c.rect(1, 10, 4, 13, SKIN); c.rect(12, 10, 15, 13, SKIN)
-    c.rect(12, 6, 15, 10, TRUNK); c.ellipse(13, 7, 15, 9, LEMON)
-    c.rect(4, 13, 6, 15 if frame & 1 else 14, BLACK)
-    c.rect(9, 13, 11, 14 if frame & 1 else 15, BLACK)
+    c = Canvas(24, 24)
+    c.rect(4, 0, 19, 8, HAIR)
+    c.rect(2, 4, 7, 10, HAIR)
+    c.rect(6, 4, 18, 13, SKIN)
+    c.rect(8, 7, 9, 8, EYE)
+    c.rect(15, 7, 16, 8, EYE)
+    c.rect(10, 11, 15, 11, (210, 90, 80, 255))
+    c.rect(3, 13, 21, 20, DRESS)
+    c.rect(1, 15, 6, 20, SKIN)
+    c.rect(18, 15, 23, 20, SKIN)
+    c.rect(17, 9, 23, 16, TRUNK)
+    c.ellipse(18, 10, 22, 14, LEMON)
+    c.rect(6, 20, 10, 23 if frame & 1 else 22, BLACK)
+    c.rect(14, 20, 18, 22 if frame & 1 else 23, BLACK)
     return c
 
 
 def chicken_frame(frame: int) -> Canvas:
-    c = Canvas(16, 16)
-    c.ellipse(4, 4, 13, 12, CHICKEN)
-    c.ellipse(10, 2, 15, 7, CHICKEN)
-    c.rect(14, 4, 15, 6, ENERGY)
-    c.px(12, 4, BLACK)
-    c.ellipse(1 if frame & 1 else 2, 7, 7, 10, WHITE)
-    c.rect(5, 12, 6, 15, ENERGY); c.rect(10, 12, 11, 15, ENERGY)
+    c = Canvas(24, 24)
+    c.ellipse(5, 7, 19, 17, CHICKEN)
+    c.ellipse(14, 3, 22, 11, CHICKEN)
+    c.rect(21, 7, 23, 9, ENERGY)
+    c.rect(17, 6, 18, 7, BLACK)
+    c.ellipse(1 if frame & 1 else 3, 10, 10, 15, WHITE)
+    c.rect(8, 17, 10, 23, ENERGY)
+    c.rect(15, 17, 17, 23, ENERGY)
     return c
 
 
 def rooster_frame(frame: int) -> Canvas:
-    c = Canvas(16, 16)
-    c.ellipse(3, 5, 13, 13, ROOSTER)
-    c.ellipse(9, 1, 15, 7, ROOSTER)
-    c.rect(10, 0, 14, 2, ENERGY)
-    c.rect(14, 4, 15, 6, LEMON)
-    c.px(12, 3, BLACK)
-    c.ellipse(-3, 5, 8, 15, BLUE)
-    c.rect(5, 13, 6, 15, ENERGY); c.rect(11, 13, 12, 15, ENERGY)
+    c = Canvas(24, 24)
+    c.ellipse(4, 8, 19, 18, ROOSTER)
+    c.ellipse(13, 2, 22, 11, ROOSTER)
+    c.rect(14, 0, 21, 3, ENERGY)
+    c.rect(21, 6, 23, 8, LEMON)
+    c.rect(17, 5, 18, 6, BLACK)
+    c.ellipse(-2, 9, 9, 18, BLUE)
+    c.rect(7, 18, 9, 23, ENERGY)
+    c.rect(15, 18, 17, 23, ENERGY)
     return c
 
 
 def lemon_frame(kind: str) -> Canvas:
     colors = {"normal": LEMON, "magic": MAGIC, "energy": ENERGY, "bad": BAD}
-    c = Canvas(16, 16)
-    c.ellipse(3, 4, 12, 12, colors[kind])
-    c.ellipse(6, 3, 14, 11, colors[kind])
-    c.rect(10, 2, 14, 4, TREE)
+    c = Canvas(24, 24)
+    c.ellipse(5, 7, 16, 19, colors[kind])
+    c.ellipse(8, 5, 20, 17, colors[kind])
+    c.rect(14, 4, 20, 7, TREE)
     if kind == "bad":
-        c.rect(6, 8, 11, 10, BLACK)
+        c.rect(8, 12, 16, 15, BLACK)
     return c
 
 
 def sheet(frames: list[Canvas], name: str) -> None:
-    out = Canvas(16 * len(frames), 16)
+    out = Canvas(24 * len(frames), 24)
     for i, frame in enumerate(frames):
-        out.paste(frame, i * 16, 0)
+        out.paste(frame, i * 24, 0)
     out.save_png(PNG / name)
 
 
@@ -218,10 +233,10 @@ def main() -> None:
     icon.rect(29, 32, 34, 36, (3, 41, 56, 255))
     icon.save_png(ROOT / "icon.png")
 
-    sheet([moana_frame(i) for i in range(4)], "sprite_moana_4frames_16x16.png")
-    sheet([chicken_frame(i) for i in range(4)], "sprite_chicken_4frames_16x16.png")
-    sheet([rooster_frame(i) for i in range(4)], "sprite_rooster_4frames_16x16.png")
-    sheet([lemon_frame(k) for k in ["normal", "magic", "energy", "bad"]], "sprite_lemons_4kinds_16x16.png")
+    sheet([moana_frame(i) for i in range(4)], "sprite_moana_4frames_24x24.png")
+    sheet([chicken_frame(i) for i in range(4)], "sprite_chicken_4frames_24x24.png")
+    sheet([rooster_frame(i) for i in range(4)], "sprite_rooster_4frames_24x24.png")
+    sheet([lemon_frame(k) for k in ["normal", "magic", "energy", "bad"]], "sprite_lemons_4kinds_24x24.png")
 
     melody = [(392, .18), (392, .18), (440, .18), (392, .18), (330, .30), (0, .10),
               (330, .18), (349, .18), (392, .18), (349, .18), (330, .30)]
@@ -237,10 +252,12 @@ def main() -> None:
         "png": sorted(p.name for p in PNG.glob("*.png")),
         "wav": sorted(p.name for p in WAV.glob("*.wav")),
         "sprite_format": {
-            "sprite_*_4frames_16x16.png": "4 horizontal frames, each 16x16 RGBA",
-            "sprite_lemons_4kinds_16x16.png": "normal, magic, energy, bad lemon frames"
+            "sprite_*_4frames_24x24.png": "4 horizontal frames, each 24x24 RGBA",
+            "sprite_lemons_4kinds_24x24.png": "normal, magic, energy, bad lemon frames"
         },
-        "music_note": "Original chiptune motif inspired by the cheerful feel of Lemon Tree; no copied recording or song file is bundled."
+        "music_note": "Original chiptune motif inspired by the cheerful feel of Lemon Tree; no copied recording or song file is bundled.",
+        "imagegen_note": "The polished project splash is splash_moana_ischia_ai_320x200.png, showing Castello Aragonese of Ischia.",
+        "character_note": "Moana is represented as an original Neapolitan 6-year-old girl with pale skin, brown-red hair, and green-blue eyes."
     }
     (ROOT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
 

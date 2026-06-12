@@ -9,6 +9,15 @@ portable="${PRG32_PORTABLE:-1}"
 game_tool="$prg32_repo/tools/prg32_game.py"
 name="moana-lemon-apocalypse"
 
+if [[ -f "$prg32_repo/components/prg32/include/prg32_abi_hash.h" ]] &&
+   ! grep -q 'PRG32_ABI_MINOR 1u' "$prg32_repo/components/prg32/include/prg32_abi_hash.h"; then
+  cat >&2 <<EOF
+warning: this game uses 24x24 sprite assets designed for PRG32 ABI 1.1.
+Use PRG32 branch dev-sprite24x24-1 for firmware builds:
+  git -C "$prg32_repo" checkout dev-sprite24x24-1
+EOF
+fi
+
 build_args=()
 if [[ "$portable" == "1" || "$portable" == "true" || "$portable" == "yes" ]]; then
   if ! python3 "$game_tool" build --help | grep -q -- '--portable'; then

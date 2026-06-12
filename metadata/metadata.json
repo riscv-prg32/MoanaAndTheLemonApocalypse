@@ -4,7 +4,7 @@
   "title": "Moana and the Lemon Apocalypse",
   "version": "1.0.0",
   "summary": "A PRG32 arcade game about Moana gathering lemons before chickens and a rooster ruin the day.",
-  "description": "Moana is a 6-year-old lemon collector racing through a bright grove. Lemons fall in pseudo-random patterns, expire on the ground, and are contested by chickens. Magic lemons add time, energetic lemons speed Moana up, bad lemons consume precious seconds, and a rooster periodically attacks until Moana scares him away by throwing lemons from her basket. Each screen lasts 150 seconds and ends with a door escape while chickens and the rooster pursue her.",
+  "description": "Moana is a Neapolitan 6-year-old lemon collector with pale skin, brown-red hair, and green-blue eyes, racing through a bright Ischia-inspired lemon grove. Lemons fall in pseudo-random patterns, expire on the ground, and are contested by chickens. Magic lemons add time, energetic lemons speed Moana up, bad lemons consume precious seconds, and a rooster periodically attacks until Moana scares him away by throwing lemons from her basket. Each screen lasts 150 seconds and ends with a door escape while chickens and the rooster pursue her.",
   "authors": [
     {
       "name": "Raffaele Montella",

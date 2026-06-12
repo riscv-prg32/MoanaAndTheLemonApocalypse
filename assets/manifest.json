@@ -3,13 +3,13 @@
   "license": "MIT / original generated assets",
   "png": [
     "background_lemon_grove_320x200.png",
-    "splash_moana_lemon_apocalypse_ai_320x200.png",
+    "splash_moana_ischia_ai_320x200.png",
+    "splash_moana_ischia_generated_source.png",
     "splash_moana_lemon_apocalypse_320x200.png",
-    "splash_moana_lemon_apocalypse_generated_source.png",
-    "sprite_chicken_4frames_16x16.png",
-    "sprite_lemons_4kinds_16x16.png",
-    "sprite_moana_4frames_16x16.png",
-    "sprite_rooster_4frames_16x16.png"
+    "sprite_chicken_4frames_24x24.png",
+    "sprite_lemons_4kinds_24x24.png",
+    "sprite_moana_4frames_24x24.png",
+    "sprite_rooster_4frames_24x24.png"
   ],
   "wav": [
     "sfx_bad_lemon.wav",
@@ -19,9 +19,10 @@
     "soundtrack_lemon_tree_inspired_loop.wav"
   ],
   "sprite_format": {
-    "sprite_*_4frames_16x16.png": "4 horizontal frames, each 16x16 RGBA",
-    "sprite_lemons_4kinds_16x16.png": "normal, magic, energy, bad lemon frames"
+    "sprite_*_4frames_24x24.png": "4 horizontal frames, each 24x24 RGBA",
+    "sprite_lemons_4kinds_24x24.png": "normal, magic, energy, bad lemon frames"
   },
   "music_note": "Original chiptune motif inspired by the cheerful feel of Lemon Tree; no copied recording or song file is bundled.",
-  "imagegen_note": "splash_moana_lemon_apocalypse_ai_320x200.png is a project-bound AI-generated splash asset resized from the saved source image."
+  "imagegen_note": "splash_moana_ischia_ai_320x200.png is the project-bound AI-generated splash asset showing Castello Aragonese of Ischia.",
+  "character_note": "Moana is represented as an original Neapolitan 6-year-old girl with pale skin, brown-red hair, and green-blue eyes."
 }
