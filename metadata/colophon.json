@@ -1,22 +1,41 @@
 {
   "abi": "prg32-colophon-1.0",
   "title": "Moana and the Lemon Apocalypse",
-  "entries": [
+  "version": "1.0.0",
+  "release_date": "2026-06-12",
+  "developer": {
+    "name": "Raffaele Montella",
+    "url": "https://github.com/riscv-prg32/MoanaAndTheLemonApocalypse"
+  },
+  "authors": [
     {
       "role": "Game design and implementation",
       "name": "Raffaele Montella and Codex"
-    },
-    {
-      "role": "Reference framework",
-      "name": "PRG32"
-    },
-    {
-      "role": "Project structure example",
-      "name": "You Have Got Pizza"
-    },
-    {
-      "role": "Artwork and sound",
-      "name": "Original generated 24x24 sprite assets; Ischia splash art; chiptune motif inspired by Lemon Tree"
     }
-  ]
+  ],
+  "license": "MIT",
+  "acknowledgements": [
+    "Reference framework: PRG32",
+    "Project structure example: You Have Got Pizza",
+    "Artwork and sound: Original generated 24x24 sprite assets; Ischia splash art; chiptune motif inspired by Lemon Tree"
+  ],
+  "controls": [
+    {
+      "input": "D-pad",
+      "action": "Move Moana"
+    },
+    {
+      "input": "A",
+      "action": "Throw a lemon"
+    },
+    {
+      "input": "SELECT",
+      "action": "Start play"
+    },
+    {
+      "input": "ESC",
+      "action": "Quit in emulator"
+    }
+  ],
+  "start_prompt": "Press SELECT to play"
 }
