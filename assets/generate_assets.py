@@ -218,6 +218,48 @@ def wav(name: str, notes: list[tuple[float, float]], rate: int = 22050) -> None:
         f.writeframes(data)
 
 
+def chip_wave(phase: float) -> float:
+    phase %= 1.0
+    if phase < 0.5:
+        return phase * 4.0 - 1.0
+    return 3.0 - phase * 4.0
+
+
+def soundtrack_wav(name: str, rate: int = 22050) -> None:
+    melody = [
+        392, 494, 587, 659, 587, 494, 440, 392,
+        330, 392, 440, 494, 440, 392, 330, 0,
+        392, 494, 587, 784, 659, 587, 494, 440,
+        523, 659, 587, 523, 494, 440, 392, 0,
+        440, 523, 659, 698, 659, 523, 494, 440,
+        392, 494, 587, 659, 784, 659, 587, 0,
+        659, 784, 880, 988, 880, 784, 659, 587,
+        523, 587, 659, 587, 494, 440, 392, 0,
+    ]
+    bass = [196, 196, 165, 165, 220, 220, 196, 196, 175, 175, 196, 196, 147, 165, 196, 0]
+    step_dur = 0.20
+    data = bytearray()
+    samples_per_step = int(rate * step_dur)
+    for i, note in enumerate(melody):
+        bass_note = bass[(i // 4) % len(bass)]
+        for n in range(samples_per_step):
+            t = n / rate
+            env = min(1.0, n / (rate * 0.012), (samples_per_step - n) / (rate * 0.035))
+            value = 0.0
+            if note:
+                value += math.sin(2 * math.pi * note * t) * 0.58
+                value += chip_wave(note * 2 * t) * 0.18
+            if bass_note and (i % 4) in (0, 2):
+                value += chip_wave(bass_note * t) * 0.28
+            value *= env * 15000
+            data.extend(struct.pack("<h", int(max(-28000, min(28000, value)))))
+    with wave.open(str(WAV / name), "wb") as f:
+        f.setnchannels(1)
+        f.setsampwidth(2)
+        f.setframerate(rate)
+        f.writeframes(data)
+
+
 def main() -> None:
     bg = background()
     bg.save_png(PNG / "background_lemon_grove_320x200.png")
@@ -238,9 +280,7 @@ def main() -> None:
     sheet([rooster_frame(i) for i in range(4)], "sprite_rooster_4frames_24x24.png")
     sheet([lemon_frame(k) for k in ["normal", "magic", "energy", "bad"]], "sprite_lemons_4kinds_24x24.png")
 
-    melody = [(392, .18), (392, .18), (440, .18), (392, .18), (330, .30), (0, .10),
-              (330, .18), (349, .18), (392, .18), (349, .18), (330, .30)]
-    wav("soundtrack_lemon_tree_inspired_loop.wav", melody * 4)
+    soundtrack_wav("soundtrack_lemon_tree_inspired_loop.wav")
     wav("sfx_collect_lemon.wav", [(660, .08), (880, .08)])
     wav("sfx_rooster_scared.wav", [(1047, .12), (784, .08)])
     wav("sfx_bad_lemon.wav", [(110, .18)])
@@ -256,7 +296,7 @@ def main() -> None:
             "sprite_lemons_4kinds_24x24.png": "normal, magic, energy, bad lemon frames"
         },
         "music_note": "Original chiptune motif inspired by the cheerful feel of Lemon Tree; no copied recording or song file is bundled.",
-        "imagegen_note": "The polished project splash is splash_moana_ischia_ai_320x200.png, showing Castello Aragonese of Ischia.",
+        "imagegen_note": "splash_moana_ischia_ai_320x200.png is the project-bound AI-generated splash asset showing Castello Aragonese of Ischia.",
         "character_note": "Moana is represented as an original Neapolitan 6-year-old girl with pale skin, brown-red hair, and green-blue eyes."
     }
     (ROOT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

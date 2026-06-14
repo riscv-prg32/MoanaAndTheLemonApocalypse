@@ -31,9 +31,10 @@
 #define ENERGY_FRAMES (12u * FPS)
 #define QUOTA_BASE 18
 #define FINAL_LEVEL 7
+#define GAME_ID "moana-lemon-apocalypse"
 
-#define COLOR_SKY       0x7e3f
-#define COLOR_SEA       0x04b7
+#define COLOR_SKY       0x04bf
+#define COLOR_SEA       0x0355
 #define COLOR_GRASS     0x4de7
 #define COLOR_GRASS_DK  0x1b43
 #define COLOR_SAND      0xff18
@@ -118,10 +119,19 @@ typedef struct {
 static const int16_t tree_x[MAX_TREES] = { 58, 154, 248, 104, 204, 286 };
 static const int16_t tree_y[MAX_TREES] = { 42, 30, 44, 56, 54, 28 };
 static const uint16_t melody[] = {
-    392, 0, 494, 0, 440, 523, 0, 392,
-    0, 330, 392, 0, 587, 0, 523, 440,
-    0, 392, 494, 0, 659, 587, 0, 523,
-    0, 440, 392, 0, 330, 0, 392, 0
+    392, 494, 587, 659, 587, 494, 440, 392,
+    330, 392, 440, 494, 440, 392, 330, 0,
+    392, 494, 587, 784, 659, 587, 494, 440,
+    523, 659, 587, 523, 494, 440, 392, 0,
+    440, 523, 659, 698, 659, 523, 494, 440,
+    392, 494, 587, 659, 784, 659, 587, 0,
+    659, 784, 880, 988, 880, 784, 659, 587,
+    523, 587, 659, 587, 494, 440, 392, 0
+};
+
+static const uint16_t bassline[] = {
+    196, 196, 165, 165, 220, 220, 196, 196,
+    175, 175, 196, 196, 147, 165, 196, 0
 };
 
 static GameState state;
@@ -143,6 +153,8 @@ static uint8_t effect_timer;
 static EffectKind effect_kind;
 static uint8_t next_screen_after_clear;
 static uint8_t last_dir;
+static uint8_t score_submitted;
+static uint8_t score_submit_ok;
 static int8_t moana_facing;
 static uint32_t prev_input;
 static int16_t moana_x;
@@ -189,6 +201,13 @@ static void trigger_effect(EffectKind kind, uint8_t frames) {
     effect_timer = frames;
 }
 
+static void submit_score_once(void) {
+    if (score_submitted) return;
+    score_submitted = 1;
+    prg32_score_player_prompt();
+    score_submit_ok = (prg32_score_submit_current_player(GAME_ID, score) == 0);
+}
+
 static void draw_num2(int x, int y, uint16_t value, uint16_t fg) {
     char s[3];
     value %= 100;
@@ -208,7 +227,7 @@ static void draw_num3(int x, int y, uint16_t value, uint16_t fg) {
     prg32_gfx_text8(x, y, s, fg, PRG32_COLOR_BLACK);
 }
 
-static void draw_num5(int x, int y, uint16_t value, uint16_t fg) {
+static void draw_num5_bg(int x, int y, uint16_t value, uint16_t fg, uint16_t bg) {
     char s[6];
     s[0] = (char)('0' + value / 10000);
     s[1] = (char)('0' + (value / 1000) % 10);
@@ -216,14 +235,48 @@ static void draw_num5(int x, int y, uint16_t value, uint16_t fg) {
     s[3] = (char)('0' + (value / 10) % 10);
     s[4] = (char)('0' + value % 10);
     s[5] = 0;
-    prg32_gfx_text8(x, y, s, fg, PRG32_COLOR_BLACK);
+    prg32_gfx_text8(x, y, s, fg, bg);
+}
+
+static void draw_num5(int x, int y, uint16_t value, uint16_t fg) {
+    draw_num5_bg(x, y, value, fg, PRG32_COLOR_BLACK);
+}
+
+static void draw_top_scores(int x, int y, uint16_t bg) {
+    prg32_gfx_text8(x, y, "LOCAL TOP 5", COLOR_MAGIC, bg);
+    int count = prg32_score_count(GAME_ID);
+    if (count <= 0) {
+        prg32_gfx_text8(x, y + 16, "NO SCORES YET", PRG32_COLOR_WHITE, bg);
+        return;
+    }
+    if (count > 5) count = 5;
+    for (int i = 0; i < count; ++i) {
+        prg32_score_t record;
+        char rank[3];
+        char player[13];
+        if (prg32_score_get(GAME_ID, i, &record) != 0) break;
+        for (uint8_t j = 0; j < 12; ++j) {
+            player[j] = record.player[j];
+            if (!player[j]) break;
+        }
+        player[12] = 0;
+        rank[0] = (char)('1' + i);
+        rank[1] = '.';
+        rank[2] = 0;
+        prg32_gfx_text8(x, y + 16 + i * 14, rank, PRG32_COLOR_WHITE, bg);
+        prg32_gfx_text8(x + 24, y + 16 + i * 14, player, PRG32_COLOR_WHITE, bg);
+        draw_num5_bg(x + 160, y + 16 + i * 14, (uint16_t)record.score, COLOR_LEMON, bg);
+    }
 }
 
 static void play_melody_tick(void) {
     if (state == STATE_FINAL_VICTORY) return;
-    if ((frame_no % 8u) == 0u) {
-        uint16_t note = melody[(frame_no / 8u) % (sizeof(melody) / sizeof(melody[0]))];
-        if (note) prg32_audio_beep(note, 14);
+    if ((frame_no % 6u) == 0u) {
+        uint16_t note = melody[(frame_no / 6u) % (sizeof(melody) / sizeof(melody[0]))];
+        if (note) prg32_audio_beep(note, 12);
+    } else if ((frame_no % 24u) == 12u) {
+        uint16_t note = bassline[(frame_no / 24u) % (sizeof(bassline) / sizeof(bassline[0]))];
+        if (note) prg32_audio_beep(note, 10);
     }
 }
 
@@ -300,6 +353,8 @@ static void start_new_game(void) {
     frame_no = 0;
     score = 0;
     basket = 0;
+    score_submitted = 0;
+    score_submit_ok = 0;
     prev_input = 0;
     start_screen(1);
 }
@@ -549,6 +604,7 @@ static void check_escape(void) {
         score += (uint16_t)(250 + screen_timer / FPS);
         if (screen_no >= FINAL_LEVEL) {
             state = STATE_FINAL_VICTORY;
+            submit_score_once();
         } else {
             next_screen_after_clear = (uint8_t)(screen_no + 1u);
             state = STATE_LEVEL_CLEAR;
@@ -569,10 +625,52 @@ static void draw_tree(int x, int y, uint8_t phase) {
     }
 }
 
+static void draw_small_lemon_branch(int x, int y, int8_t dir) {
+    uint16_t leaf = 0x2cc4;
+    prg32_gfx_rect(x, y, 48, 4, COLOR_TRUNK);
+    for (uint8_t i = 0; i < 4; ++i) {
+        int bx = x + (dir > 0 ? i * 11 : 36 - i * 11);
+        prg32_gfx_rect(bx, y + 4 + (i & 1u) * 5, 12, 6, leaf);
+        prg32_gfx_rect(bx + 4, y + 11 - (i & 1u) * 4, 7, 7, COLOR_LEMON);
+    }
+}
+
+static void draw_small_castle(int x, int y) {
+    prg32_gfx_rect(x + 4, y + 24, 76, 10, 0x5349);
+    prg32_gfx_rect(x + 14, y + 14, 46, 14, 0x9cd3);
+    prg32_gfx_rect(x + 22, y + 4, 12, 14, 0xb596);
+    prg32_gfx_rect(x + 46, y, 12, 18, 0xbdd7);
+    prg32_gfx_rect(x + 62, y + 10, 10, 18, 0xa514);
+    prg32_gfx_rect(x, y + 34, 88, 5, COLOR_SEA);
+    prg32_gfx_rect(x + 18, y + 22, 4, 5, 0x39c7);
+    prg32_gfx_rect(x + 38, y + 18, 4, 5, 0x39c7);
+    prg32_gfx_rect(x + 54, y + 14, 4, 5, 0x39c7);
+}
+
+static void draw_small_rooster_icon(int x, int y) {
+    prg32_gfx_rect(x + 6, y + 9, 18, 12, COLOR_ROOSTER);
+    prg32_gfx_rect(x + 18, y + 4, 10, 10, COLOR_ROOSTER);
+    prg32_gfx_rect(x + 20, y, 8, 4, COLOR_ENERGY);
+    prg32_gfx_rect(x + 27, y + 9, 4, 3, COLOR_LEMON);
+    prg32_gfx_rect(x, y + 10, 8, 9, 0x001f);
+    prg32_gfx_rect(x + 10, y + 21, 3, 6, COLOR_ENERGY);
+    prg32_gfx_rect(x + 20, y + 21, 3, 6, COLOR_ENERGY);
+}
+
+static void draw_small_chicken_icon(int x, int y) {
+    prg32_gfx_rect(x + 5, y + 9, 15, 10, COLOR_CHICKEN);
+    prg32_gfx_rect(x + 16, y + 4, 8, 8, COLOR_CHICKEN);
+    prg32_gfx_rect(x + 23, y + 8, 4, 3, COLOR_ENERGY);
+    prg32_gfx_rect(x + 19, y + 7, 2, 2, PRG32_COLOR_BLACK);
+    prg32_gfx_rect(x + 4, y + 12, 8, 5, PRG32_COLOR_WHITE);
+    prg32_gfx_rect(x + 9, y + 19, 3, 6, COLOR_ENERGY);
+    prg32_gfx_rect(x + 17, y + 19, 3, 6, COLOR_ENERGY);
+}
+
 static void draw_field(void) {
     prg32_gfx_clear(COLOR_SKY);
-    prg32_gfx_rect(0, 0, 320, 18, 0x047f);
-    prg32_gfx_rect(0, 18, 320, 12, 0x7e9f);
+    prg32_gfx_rect(0, 0, 320, 18, 0x0299);
+    prg32_gfx_rect(0, 18, 320, 12, 0x055f);
     prg32_gfx_rect(132, 54, 72, 12, 0xbdf7);
     prg32_gfx_rect(140, 42, 50, 12, 0xc638);
     prg32_gfx_rect(148, 30, 12, 12, 0xa514);
@@ -590,9 +688,21 @@ static void draw_field(void) {
 
 static void draw_splash_frame(uint16_t panel, uint16_t inner) {
     draw_field();
-    prg32_gfx_rect(22, 32, 276, 118, 0x0149);
-    prg32_gfx_rect(24, 34, 272, 114, panel);
-    prg32_gfx_rect(28, 38, 264, 106, inner);
+    prg32_gfx_rect(22, 24, 276, 156, 0x0149);
+    prg32_gfx_rect(24, 26, 272, 152, panel);
+    prg32_gfx_rect(28, 30, 264, 144, inner);
+}
+
+static void draw_title_frame(void) {
+    draw_field();
+    prg32_gfx_rect(4, 18, 312, 164, 0x0149);
+    prg32_gfx_rect(6, 20, 308, 160, COLOR_LEMON);
+    prg32_gfx_rect(10, 24, 300, 152, 0x0228);
+    draw_small_lemon_branch(14, 28, 1);
+    draw_small_lemon_branch(258, 28, -1);
+    draw_small_castle(214, 48);
+    draw_small_chicken_icon(22, 144);
+    draw_small_rooster_icon(258, 142);
 }
 
 static uint16_t lemon_color(LemonKind kind) {
@@ -715,16 +825,11 @@ static void draw_door(void) {
 }
 
 static void draw_splash(void) {
-    draw_splash_frame(COLOR_LEMON, 0x0228);
-    prg32_gfx_text8(58, 52, "MOANA AND THE", PRG32_COLOR_WHITE, 0x0228);
-    prg32_gfx_text8(44, 70, "LEMON APOCALYPSE", COLOR_LEMON, 0x0228);
-    prg32_gfx_rect(68, 94, 184, 16, COLOR_TREE);
-    prg32_gfx_text8(78, 98, "SELECT: start quest", PRG32_COLOR_WHITE, COLOR_TREE);
-    prg32_gfx_text8(76, 118, "A throws basket lemons", COLOR_MAGIC, 0x0228);
-    prg32_gfx_text8(48, 164, "Castello Aragonese edition", PRG32_COLOR_BLACK, COLOR_SAND);
-    draw_tree(66, 118, (uint8_t)frame_no);
-    draw_tree(250, 116, (uint8_t)(frame_no + 4u));
-    draw_moana_pose(150, 126, 1, 0, EFFECT_NONE);
+    draw_title_frame();
+    prg32_gfx_text8(36, 48, "MOANA AND THE LEMON APOCALYPSE", COLOR_LEMON, 0x0228);
+    draw_top_scores(58, 76, 0x0228);
+    prg32_gfx_rect(68, 158, 184, 16, COLOR_TREE);
+    prg32_gfx_text8(78, 162, "SELECT: start quest", PRG32_COLOR_WHITE, COLOR_TREE);
 }
 
 static void draw_level_clear(void) {
@@ -738,23 +843,26 @@ static void draw_level_clear(void) {
 
 static void draw_game_over_splash(void) {
     draw_splash_frame(0x7a86, 0x2104);
-    prg32_gfx_text8(100, 54, "NOT TODAY", COLOR_LEMON, 0x2104);
-    prg32_gfx_text8(62, 78, "Moana is sad, but ready", PRG32_COLOR_WHITE, 0x2104);
-    prg32_gfx_text8(74, 96, "to try one more time.", PRG32_COLOR_WHITE, 0x2104);
-    prg32_gfx_text8(74, 120, "SELECT: rise again", COLOR_MAGIC, 0x2104);
-    draw_moana_pose(148, 124, -1, 0, EFFECT_NONE);
-    prg32_gfx_rect(156, 134, 8, 2, COLOR_BAD);
+    prg32_gfx_text8(100, 46, "NOT TODAY", COLOR_LEMON, 0x2104);
+    prg32_gfx_text8(58, 64, "YOUR SCORE", PRG32_COLOR_WHITE, 0x2104);
+    draw_num5_bg(154, 64, score, COLOR_LEMON, 0x2104);
+    prg32_gfx_text8(58, 80, score_submit_ok ? "SCOREBOARD OK" : "SCOREBOARD OFF", COLOR_MAGIC, 0x2104);
+    draw_top_scores(58, 98, 0x2104);
+    prg32_gfx_text8(74, 168, "SELECT: rise again", COLOR_MAGIC, 0x2104);
+    draw_moana_pose(238, 122, -1, 0, EFFECT_NONE);
+    prg32_gfx_rect(246, 132, 8, 2, COLOR_BAD);
 }
 
 static void draw_final_victory(void) {
     draw_splash_frame(0xffe0, 0x0348);
-    prg32_gfx_text8(70, 50, "GLORIOUS LEMONS!", COLOR_LEMON, 0x0348);
-    prg32_gfx_text8(58, 74, "Moana saved the grove", PRG32_COLOR_WHITE, 0x0348);
-    prg32_gfx_text8(78, 96, "and outran them all.", PRG32_COLOR_WHITE, 0x0348);
-    prg32_gfx_text8(78, 122, "SELECT: play again", COLOR_MAGIC, 0x0348);
-    draw_tree(58, 118, (uint8_t)frame_no);
-    draw_tree(246, 118, (uint8_t)(frame_no + 6u));
-    draw_moana_pose(148, 120, 1, 24, EFFECT_MAGIC);
+    prg32_gfx_text8(70, 46, "GLORIOUS LEMONS!", COLOR_LEMON, 0x0348);
+    prg32_gfx_text8(58, 64, "YOUR SCORE", PRG32_COLOR_WHITE, 0x0348);
+    draw_num5_bg(154, 64, score, COLOR_LEMON, 0x0348);
+    prg32_gfx_text8(58, 80, score_submit_ok ? "SCOREBOARD OK" : "SCOREBOARD OFF", COLOR_MAGIC, 0x0348);
+    draw_top_scores(58, 98, 0x0348);
+    prg32_gfx_text8(78, 168, "SELECT: play again", COLOR_MAGIC, 0x0348);
+    draw_tree(250, 118, (uint8_t)(frame_no + 6u));
+    draw_moana_pose(226, 120, 1, 24, EFFECT_MAGIC);
 }
 
 void moana_lemon_c_init(void) {
@@ -801,6 +909,7 @@ void moana_lemon_c_update(void) {
     if (screen_timer > 0) screen_timer--;
     if (screen_timer == 0) {
         state = STATE_GAME_OVER;
+        submit_score_once();
         prg32_audio_beep(80, 240);
         prev_input = input;
         return;
