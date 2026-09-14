@@ -269,14 +269,31 @@ static void draw_top_scores(int x, int y, uint16_t bg) {
     }
 }
 
+/* Convert a beep frequency to the nearest portable MIDI note. */
+static void play_tone(uint32_t hz, uint32_t duration_ms) {
+    static const uint16_t semitone_hz[] = {
+        262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523
+    };
+    int octave = 4;
+    while (hz < 262 && octave > 0) { hz *= 2; octave--; }
+    while (hz >= 523 && octave < 8) { hz /= 2; octave++; }
+    uint8_t semitone = 0;
+    while (semitone < 12 &&
+           hz > (uint32_t)(semitone_hz[semitone] + semitone_hz[semitone + 1]) / 2u) {
+        semitone++;
+    }
+    prg32_audio_note(0, PRG32_DEFAULT_INSTRUMENT_ID,
+                     (uint8_t)(12 * (octave + 1) + semitone), 190, duration_ms);
+}
+
 static void play_melody_tick(void) {
     if (state == STATE_FINAL_VICTORY) return;
     if ((frame_no % 6u) == 0u) {
         uint16_t note = melody[(frame_no / 6u) % (sizeof(melody) / sizeof(melody[0]))];
-        if (note) prg32_audio_beep(note, 12);
+        if (note) play_tone(note, 12);
     } else if ((frame_no % 24u) == 12u) {
         uint16_t note = bassline[(frame_no / 24u) % (sizeof(bassline) / sizeof(bassline[0]))];
-        if (note) prg32_audio_beep(note, 10);
+        if (note) play_tone(note, 10);
     }
 }
 
@@ -284,7 +301,7 @@ static void play_victory_sound_tick(void) {
     static const uint16_t notes[] = { 523, 659, 784, 1047 };
     if ((frame_no % 6u) == 0u) {
         uint8_t step = (uint8_t)((frame_no / 6u) & 3u);
-        prg32_audio_beep(notes[step], 35);
+        play_tone(notes[step], 35);
     }
 }
 
@@ -295,7 +312,7 @@ static void play_final_song_tick(void) {
     };
     if ((frame_no % 7u) == 0u) {
         uint16_t note = notes[(frame_no / 7u) % (sizeof(notes) / sizeof(notes[0]))];
-        if (note) prg32_audio_beep(note, 45);
+        if (note) play_tone(note, 45);
     }
 }
 
@@ -404,29 +421,29 @@ static void collect_lemon(Lemon *l) {
     if (l->kind == LEMON_BAD) {
         screen_timer = (screen_timer > BAD_TIME_FRAMES) ? screen_timer - BAD_TIME_FRAMES : 1;
         trigger_effect(EFFECT_BAD, 36);
-        prg32_audio_beep(110, 120);
+        play_tone(110, 120);
         return;
     }
     if (l->kind == LEMON_MAGIC) {
         screen_timer += MAGIC_TIME_FRAMES;
         score += 75;
         trigger_effect(EFFECT_MAGIC, 42);
-        prg32_audio_beep(880, 90);
+        play_tone(880, 90);
     } else if (l->kind == LEMON_ENERGY) {
         energy_timer = 255;
         score += 50;
         trigger_effect(EFFECT_ENERGY, 55);
-        prg32_audio_beep(740, 70);
+        play_tone(740, 70);
     } else {
         score += 20;
-        prg32_audio_beep(660, 35);
+        play_tone(660, 35);
     }
     basket++;
     collected_this_screen++;
     if (collected_this_screen >= quota && state == STATE_PLAY) {
         state = STATE_ESCAPE;
         choose_door();
-        prg32_audio_beep(988, 140);
+        play_tone(988, 140);
     }
 }
 
@@ -480,7 +497,7 @@ static void throw_lemon(void) {
             s->dy = vy[last_dir];
             s->active = 1;
             basket--;
-            prg32_audio_beep(520, 30);
+            play_tone(520, 30);
             return;
         }
     }
@@ -499,7 +516,7 @@ static void update_shots(void) {
             rooster.cooldown = 210;
             score += 100;
             trigger_effect(EFFECT_MAGIC, 36);
-            prg32_audio_beep(1047, 120);
+            play_tone(1047, 120);
         }
     }
 }
@@ -536,7 +553,7 @@ static void update_chickens(void) {
             if (l->active && l->kind == LEMON_NORMAL && overlap(c->x, c->y, CHICKEN_W, CHICKEN_H, l->x, l->y, LEMON_W, LEMON_H)) {
                 l->active = 0;
                 if (score > 3) score -= 3;
-                prg32_audio_beep(180, 18);
+                play_tone(180, 18);
             }
         }
     }
@@ -557,7 +574,7 @@ static void update_rooster(void) {
             rooster.x = (rnd() & 1u) ? 2 : SCREEN_W - ROOSTER_W - 2;
             rooster.y = (int16_t)(34 + (rnd() % 130u));
             rooster.facing = (rooster.x < SCREEN_W / 2) ? 1 : -1;
-            prg32_audio_beep(196, 120);
+            play_tone(196, 120);
         }
         return;
     }
@@ -586,7 +603,7 @@ static void hurt_moana(const char *text) {
     trigger_effect(EFFECT_HURT, 60);
     if (basket > 0) basket--;
     screen_timer = (screen_timer > 90) ? screen_timer - 90 : 1;
-    prg32_audio_beep(98, 150);
+    play_tone(98, 150);
     moana_x = 152;
     moana_y = 106;
 }
@@ -609,7 +626,7 @@ static void check_escape(void) {
             next_screen_after_clear = (uint8_t)(screen_no + 1u);
             state = STATE_LEVEL_CLEAR;
         }
-        prg32_audio_beep(1047, 140);
+        play_tone(1047, 140);
     }
 }
 
@@ -893,7 +910,7 @@ void moana_lemon_c_update(void) {
         return;
     }
     if (state == STATE_GAME_OVER) {
-        if ((frame_no % 48u) == 0u) prg32_audio_beep(165, 80);
+        if ((frame_no % 48u) == 0u) play_tone(165, 80);
         if (pressed & BTN_SELECT) start_new_game();
         prev_input = input;
         return;
@@ -910,7 +927,7 @@ void moana_lemon_c_update(void) {
     if (screen_timer == 0) {
         state = STATE_GAME_OVER;
         submit_score_once();
-        prg32_audio_beep(80, 240);
+        play_tone(80, 240);
         prev_input = input;
         return;
     }

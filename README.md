@@ -121,13 +121,9 @@ git clone https://github.com/riscv-prg32/PRG32.git
 git clone https://github.com/riscv-prg32/MoanaAndTheLemonApocalypse.git
 ```
 
-For the 24x24 sprite firmware used by this cartridge, use PRG32 branch
-`dev-sprite24x24-1` or newer equivalent support:
-
-```bash
-cd $HOME/src/PRG32
-git checkout dev-sprite24x24-1
-```
+Use the current PRG32 `main` branch. The game draws its characters with
+portable graphics primitives, so no sprite-specific development branch is
+needed.
 
 Then tell the helper script where PRG32 is:
 
@@ -164,22 +160,14 @@ The output is:
 dist/moana-lemon-apocalypse-qemu.prg32
 ```
 
-Portable builds are enabled by default with `PRG32_PORTABLE=1`. To build the
-legacy firmware-specific absolute-import format for older firmware, set
-`PRG32_PORTABLE=0` and pass the matching firmware ELF:
-
-```bash
-export PRG32_PORTABLE=0
-export PRG32_ARCHITECTURE=esp32c6
-scripts/build.sh "$PRG32_REPO/build/PRG32.elf"
-```
+Builds use the portable ABI required by current PRG32 `main`.
 
 ## Deploy a Portable Cartridge
 
 Upload to a PRG32 ESP32-C6 board:
 
 ```bash
-python3 "$PRG32_REPO/tools/prg32_game.py" upload \
+PYTHONPATH="$PRG32_REPO" python3 -m prg32 esp32c6 upload \
   dist/moana-lemon-apocalypse-esp32c6.prg32 \
   --url http://192.168.4.1
 ```
@@ -187,9 +175,9 @@ python3 "$PRG32_REPO/tools/prg32_game.py" upload \
 Stage the QEMU cartridge into a PRG32 QEMU flash image:
 
 ```bash
-python3 "$PRG32_REPO/tools/prg32_game.py" upload-qemu \
+PYTHONPATH="$PRG32_REPO" python3 -m prg32 qemu upload \
   dist/moana-lemon-apocalypse-qemu.prg32 \
-  --flash "$PRG32_REPO/build-qemu/flash_image.bin" \
+  --flash "$PRG32_REPO/build-qemu/qemu_flash.bin" \
   --partitions "$PRG32_REPO/partitions_prg32.csv"
 ```
 
@@ -208,7 +196,7 @@ scripts/build.sh
 
 scripts/pack-store-bundle.sh
 
-python3 "$PRG32_REPO/tools/prg32_game.py" publish-bundle \
+PYTHONPATH="$PRG32_REPO" python3 -m prg32 store publish-bundle \
   dist/moana-lemon-apocalypse-store-bundle.zip \
   --store-url http://192.168.1.42:5080 \
   --token "$PRG32_STORE_TOKEN"
