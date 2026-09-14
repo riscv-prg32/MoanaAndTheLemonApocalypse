@@ -75,7 +75,7 @@ Every laboratory uses the same disciplined loop.
    Upload to hardware:
 
    ```bash
-   python3 "$PRG32_REPO/tools/prg32_game.py" upload \
+   PYTHONPATH="$PRG32_REPO" python3 -m prg32 esp32c6 upload \
      dist/moana-lemon-apocalypse-esp32c6.prg32 \
      --url http://192.168.4.1
    ```
@@ -83,9 +83,9 @@ Every laboratory uses the same disciplined loop.
    Stage for QEMU:
 
    ```bash
-   python3 "$PRG32_REPO/tools/prg32_game.py" upload-qemu \
+   PYTHONPATH="$PRG32_REPO" python3 -m prg32 qemu upload \
      dist/moana-lemon-apocalypse-qemu.prg32 \
-     --flash "$PRG32_REPO/build-qemu/flash_image.bin" \
+     --flash "$PRG32_REPO/build-qemu/qemu_flash.bin" \
      --partitions "$PRG32_REPO/partitions_prg32.csv"
    ```
 
@@ -159,12 +159,7 @@ Students build the unmodified cartridge and learn the local directory layout.
    git clone https://github.com/riscv-prg32/MoanaAndTheLemonApocalypse.git
    ```
 
-2. Use a PRG32 checkout with 24x24 sprite ABI support:
-
-   ```bash
-   cd $HOME/src/PRG32
-   git checkout dev-sprite24x24-1
-   ```
+2. Use the current PRG32 `main` checkout; this game uses portable drawing calls.
 
 3. Enter the game repository and configure the PRG32 path:
 
@@ -196,10 +191,8 @@ Two generated files:
 
 ### Debug Notes
 
-If `scripts/build.sh` says that portable cartridge builds are unsupported, the
-PRG32 checkout is too old for this workflow. Update PRG32 to a branch or
-release with portable ABI-table cartridge tooling, or use the legacy format
-shown in `docs/build-and-publish.md`.
+If the script cannot find `prg32/__main__.py`, set `PRG32_REPO` to the
+current PRG32 checkout and try again.
 
 ## Laboratory 3: Model the Game State
 
@@ -534,7 +527,7 @@ Students publish, verify, and document the final cartridge.
 2. Publish the bundle:
 
    ```bash
-   python3 "$PRG32_REPO/tools/prg32_game.py" publish-bundle \
+   PYTHONPATH="$PRG32_REPO" python3 -m prg32 store publish-bundle \
      dist/moana-lemon-apocalypse-store-bundle.zip \
      --store-url http://192.168.1.42:5080 \
      --token "$PRG32_STORE_TOKEN"

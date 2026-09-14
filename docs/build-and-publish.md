@@ -7,10 +7,7 @@ prefix `moana_lemon_c`.
 ## Prerequisites
 
 - A local checkout of `riscv-prg32/PRG32`.
-- A PRG32 checkout from the portable ABI-table tooling branch or newer.
-- For this game, use PRG32 firmware with 24x24 sprite ABI support, for example
-  branch `dev-sprite24x24-1`.
-- The RISC-V toolchain used by `PRG32/tools/prg32_game.py`.
+- A checkout of current PRG32 `main` and its RISC-V toolchain.
 - A running Cartridge Store instance when publishing.
 
 Set `PRG32_REPO` if the PRG32 repository is not next to this repository:
@@ -61,23 +58,13 @@ The script writes:
 dist/moana-lemon-apocalypse-qemu.prg32
 ```
 
-## Build the Legacy Absolute-Import Format
-
-Use this only for firmware images that do not yet support portable ABI-table
-cartridges:
-
-```bash
-export PRG32_PORTABLE=0
-export PRG32_ARCHITECTURE=esp32c6
-scripts/build.sh "$PRG32_REPO/build/PRG32.elf"
-```
-
-The legacy cartridge is tied to the firmware ELF passed to the script.
+Current PRG32 builds portable cartridges only. The game's short tones use
+the public timed-note API and default audio instrument.
 
 ## Upload to a Board
 
 ```bash
-python3 "$PRG32_REPO/tools/prg32_game.py" upload \
+PYTHONPATH="$PRG32_REPO" python3 -m prg32 esp32c6 upload \
   dist/moana-lemon-apocalypse-esp32c6.prg32 \
   --url http://192.168.4.1
 ```
@@ -88,9 +75,9 @@ Wi-Fi.
 ## Stage in QEMU
 
 ```bash
-python3 "$PRG32_REPO/tools/prg32_game.py" upload-qemu \
+PYTHONPATH="$PRG32_REPO" python3 -m prg32 qemu upload \
   dist/moana-lemon-apocalypse-qemu.prg32 \
-  --flash "$PRG32_REPO/build-qemu/flash_image.bin" \
+  --flash "$PRG32_REPO/build-qemu/qemu_flash.bin" \
   --partitions "$PRG32_REPO/partitions_prg32.csv"
 ```
 
@@ -116,13 +103,13 @@ The bundle is:
 dist/moana-lemon-apocalypse-store-bundle.zip
 ```
 
-The bundle contains Store metadata, icon, screenshot, colophon, and every
-`.prg32` cartridge currently in `dist`.
+The bundle contains the manifest, icon, screenshot, and the two architecture
+packages listed by the manifest. Each package contains metadata and a colophon.
 
 ## Publish to Cartridge Store
 
 ```bash
-python3 "$PRG32_REPO/tools/prg32_game.py" publish-bundle \
+PYTHONPATH="$PRG32_REPO" python3 -m prg32 store publish-bundle \
   dist/moana-lemon-apocalypse-store-bundle.zip \
   --store-url http://192.168.1.42:5080 \
   --token "$PRG32_STORE_TOKEN"
