@@ -147,7 +147,7 @@ static uint16_t basket;
 static uint16_t collected_this_screen;
 static uint8_t screen_no;
 static uint8_t quota;
-static uint8_t energy_timer;
+static uint16_t energy_timer;
 static uint8_t hurt_timer;
 static uint8_t effect_timer;
 static EffectKind effect_kind;
@@ -162,8 +162,6 @@ static int16_t moana_y;
 static int16_t door_x;
 static int16_t door_y;
 static uint8_t door_side;
-
-static int abs_i(int v) { return v < 0 ? -v : v; }
 
 static uint32_t rnd(void) {
     rng_state = rng_state * 1664525u + 1013904223u;
@@ -430,7 +428,7 @@ static void collect_lemon(Lemon *l) {
         trigger_effect(EFFECT_MAGIC, 42);
         play_tone(880, 90);
     } else if (l->kind == LEMON_ENERGY) {
-        energy_timer = 255;
+        energy_timer = ENERGY_FRAMES;
         score += 50;
         trigger_effect(EFFECT_ENERGY, 55);
         play_tone(740, 70);
@@ -617,7 +615,7 @@ static void check_hazards(void) {
 
 static void check_escape(void) {
     if (state != STATE_ESCAPE) return;
-    if (overlap(moana_x, moana_y, PLAYER_W, PLAYER_H, door_x, door_y, 16, 16)) {
+    if (overlap(moana_x, moana_y, PLAYER_W, PLAYER_H, door_x, door_y, SPRITE_SIZE, SPRITE_SIZE)) {
         score += (uint16_t)(250 + screen_timer / FPS);
         if (screen_no >= FINAL_LEVEL) {
             state = STATE_FINAL_VICTORY;
